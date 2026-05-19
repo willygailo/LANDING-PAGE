@@ -118,6 +118,6 @@ Then open → **http://localhost:8080**
 
 <div align="center">
 
-📄 © 2024 Piut — All rights reserved.
+📄 © 2026 Piut — All rights reserved.
 
 </div>
