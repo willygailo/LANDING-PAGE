@@ -2,6 +2,14 @@
 
 An immersive 3D animated landing page built with Three.js, featuring a miniature town theme with golden hour lighting, a cycling character, glowing street lamps, and floating glass UI elements.
 
+## 📸 Screenshots
+
+![Hero View](image/screenshot-hero.png)
+
+![Navigation Detail](image/screenshot-nav.png)
+
+![Lightbulb Interaction](image/screenshot-bulb.png)
+
 ## 🚀 Features
 
 - **3D Miniature Town** — Houses, trees, street lamps, mountains, and clouds rendered in Three.js
@@ -28,6 +36,7 @@ LANDING PAGE/
 ├── index.html          # Main HTML structure
 ├── style.css           # All UI styling and animations
 ├── script.js           # Three.js scene, models, and animation loop
+├── image/              # Screenshots and assets
 └── README.md           # Project documentation
 ```
 
@@ -67,7 +76,7 @@ LANDING PAGE/
 
 ## 🎨 Design System
 
-- **Font:** Inter (300, 400, 500, 600, 700)
+- **Font:** Outfit (300, 400, 500, 600, 700)
 - **Primary Accent:** `#ff8c64` → `#ff6b4a` gradient
 - **Glass Effect:** `backdrop-filter: blur(20-32px)`
 - **Background:** `#12122a` deep navy
