@@ -1,6 +1,6 @@
 // Scene setup
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x1a1a3e, 0.012);
+scene.fog = new THREE.FogExp2(0x2a1a2e, 0.012);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 8, 22);
@@ -12,17 +12,17 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.85;
+renderer.toneMappingExposure = 1.0;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 // Mobile detection for performance scaling
 const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 
 // Lighting
-const ambientLight = new THREE.AmbientLight(0x4a4a8a, 0.4);
+const ambientLight = new THREE.AmbientLight(0x5a4a6a, 0.5);
 scene.add(ambientLight);
 
-const warmFill = new THREE.DirectionalLight(0xff8c64, 0.7);
+const warmFill = new THREE.DirectionalLight(0xff9c74, 0.85);
 warmFill.position.set(5, 10, 5);
 warmFill.castShadow = true;
 warmFill.shadow.mapSize.width = isMobile ? 1024 : 2048;
@@ -737,9 +737,9 @@ cloudPositions.forEach(([x, y, z, s]) => {
 const skyGeo = new THREE.SphereGeometry(60, 32, 32);
 const skyMat = new THREE.ShaderMaterial({
   uniforms: {
-    topColor: { value: new THREE.Color(0x1a1a4a) },
-    midColor: { value: new THREE.Color(0x3a2a5a) },
-    bottomColor: { value: new THREE.Color(0x2a1a3a) },
+    topColor: { value: new THREE.Color(0x2a1a3a) },
+    midColor: { value: new THREE.Color(0x4a2a4a) },
+    bottomColor: { value: new THREE.Color(0x3a1a2a) },
   },
   vertexShader: `
     varying vec3 vWorldPosition;
@@ -797,14 +797,14 @@ const fireflyMat = new THREE.PointsMaterial({
 const fireflies = new THREE.Points(fireflyGeo, fireflyMat);
 scene.add(fireflies);
 
-// Hanging lightbulb - clickable warm light
-let lightbulbOn = false;
+// Hanging lightbulb - warm light with sparks
+let lightbulbOn = true;
 const bulbGlow = document.querySelector('.bulb-glow');
 const bulbFilament = document.querySelector('.bulb-filament');
 const lightbulb = document.querySelector('.lightbulb');
 
 // 3D point light that illuminates the scene
-const bulbPointLight = new THREE.PointLight(0xffb450, 0, 30, 1.5);
+const bulbPointLight = new THREE.PointLight(0xffb450, 2.5, 30, 1.5);
 bulbPointLight.position.set(6, 7, 2);
 bulbPointLight.castShadow = !isMobile;
 bulbPointLight.shadow.mapSize.width = isMobile ? 512 : 1024;
@@ -812,9 +812,60 @@ bulbPointLight.shadow.mapSize.height = isMobile ? 512 : 1024;
 scene.add(bulbPointLight);
 
 // Subtle ambient warm wash when bulb is on
-const bulbAmbient = new THREE.PointLight(0xff9030, 0, 50, 2);
+const bulbAmbient = new THREE.PointLight(0xff9030, 1.2, 50, 2);
 bulbAmbient.position.set(6, 5, 0);
 scene.add(bulbAmbient);
+
+// Spark particles around the lightbulb
+const sparkCount = 30;
+const sparkGeo = new THREE.BufferGeometry();
+const sparkPositions = new Float32Array(sparkCount * 3);
+const sparkVelocities = [];
+const sparkLifetimes = new Float32Array(sparkCount);
+const sparkMaxLifetimes = new Float32Array(sparkCount);
+
+const bulbCenter = new THREE.Vector3(6, 6.5, 2);
+
+function resetSpark(i) {
+  sparkPositions[i * 3] = bulbCenter.x + (Math.random() - 0.5) * 0.3;
+  sparkPositions[i * 3 + 1] = bulbCenter.y + (Math.random() - 0.5) * 0.3;
+  sparkPositions[i * 3 + 2] = bulbCenter.z + (Math.random() - 0.5) * 0.3;
+  sparkVelocities[i] = {
+    x: (Math.random() - 0.5) * 0.02,
+    y: Math.random() * 0.03 + 0.01,
+    z: (Math.random() - 0.5) * 0.02
+  };
+  sparkLifetimes[i] = 0;
+  sparkMaxLifetimes[i] = Math.random() * 2 + 1;
+}
+
+for (let i = 0; i < sparkCount; i++) {
+  resetSpark(i);
+  sparkLifetimes[i] = Math.random() * sparkMaxLifetimes[i];
+}
+
+sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
+
+const sparkMat = new THREE.PointsMaterial({
+  color: 0xffdd88,
+  size: 0.08,
+  transparent: true,
+  opacity: 0.9,
+  blending: THREE.AdditiveBlending,
+  sizeAttenuation: true
+});
+
+const sparks = new THREE.Points(sparkGeo, sparkMat);
+scene.add(sparks);
+
+// Set initial warm state
+if (bulbGlow) {
+  bulbGlow.style.background = 'radial-gradient(circle, rgba(255,180,80,0.85) 0%, rgba(255,140,40,0.4) 40%, transparent 70%)';
+  bulbGlow.style.boxShadow = '0 0 60px 30px rgba(255,180,80,0.5), 0 0 120px 60px rgba(255,140,40,0.25)';
+  bulbFilament.style.background = '#ffdd55';
+  bulbFilament.style.boxShadow = '0 0 15px 6px rgba(255,200,60,0.7), 0 0 30px 12px rgba(255,180,80,0.4)';
+  lightbulb.classList.add('active');
+}
 
 if (lightbulb) {
   lightbulb.style.cursor = 'pointer';
@@ -826,7 +877,6 @@ if (lightbulb) {
       bulbFilament.style.background = '#ffdd55';
       bulbFilament.style.boxShadow = '0 0 20px 8px rgba(255,200,60,0.9), 0 0 40px 15px rgba(255,180,80,0.5)';
       lightbulb.classList.add('active');
-      // Turn on 3D light
       bulbPointLight.intensity = 3;
       bulbAmbient.intensity = 1.5;
     } else {
@@ -835,7 +885,6 @@ if (lightbulb) {
       bulbFilament.style.background = 'rgba(255,200,100,0.3)';
       bulbFilament.style.boxShadow = 'none';
       lightbulb.classList.remove('active');
-      // Turn off 3D light
       bulbPointLight.intensity = 0;
       bulbAmbient.intensity = 0;
     }
@@ -851,6 +900,130 @@ document.addEventListener('mousemove', (e) => {
   mouseY = (e.clientY / window.innerHeight) * 2 - 1;
 });
 
+// 360 rotation state
+let autoRotate = true;
+let rotationAngle = 0;
+const rotationSpeed = 0.08; // radians per second for full 360
+const cameraDistance = 22;
+const cameraHeight = 8;
+const cameraTarget = new THREE.Vector3(0, 2, 0);
+
+// Warm rain system
+const rainCount = isMobile ? 300 : 800;
+const rainGeo = new THREE.BufferGeometry();
+const rainPositions = new Float32Array(rainCount * 3);
+const rainVelocities = new Float32Array(rainCount);
+const rainDropLengths = new Float32Array(rainCount);
+
+for (let i = 0; i < rainCount; i++) {
+  rainPositions[i * 3] = (Math.random() - 0.5) * 50;
+  rainPositions[i * 3 + 1] = Math.random() * 30;
+  rainPositions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+  rainVelocities[i] = Math.random() * 0.3 + 0.4;
+  rainDropLengths[i] = Math.random() * 0.3 + 0.15;
+}
+
+rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPositions, 3));
+
+const rainMat = new THREE.PointsMaterial({
+  color: 0xffcc88,
+  size: 0.06,
+  transparent: true,
+  opacity: 0.35,
+  blending: THREE.AdditiveBlending,
+  sizeAttenuation: true
+});
+
+const rain = new THREE.Points(rainGeo, rainMat);
+scene.add(rain);
+
+// Warm wind streaks
+const windStreakCount = isMobile ? 15 : 40;
+const windGeo = new THREE.BufferGeometry();
+const windPositions = new Float32Array(windStreakCount * 3);
+const windSpeeds = new Float32Array(windStreakCount);
+const windLifetimes = new Float32Array(windStreakCount);
+
+function resetWind(i) {
+  windPositions[i * 3] = -25 + Math.random() * 10;
+  windPositions[i * 3 + 1] = Math.random() * 12 + 1;
+  windPositions[i * 3 + 2] = (Math.random() - 0.5) * 30;
+  windSpeeds[i] = Math.random() * 0.15 + 0.08;
+  windLifetimes[i] = 0;
+}
+
+for (let i = 0; i < windStreakCount; i++) {
+  resetWind(i);
+  windLifetimes[i] = Math.random() * 5;
+}
+
+windGeo.setAttribute('position', new THREE.BufferAttribute(windPositions, 3));
+
+const windMat = new THREE.PointsMaterial({
+  color: 0xffddaa,
+  size: 0.12,
+  transparent: true,
+  opacity: 0.2,
+  blending: THREE.AdditiveBlending,
+  sizeAttenuation: true
+});
+
+const windStreaks = new THREE.Points(windGeo, windMat);
+scene.add(windStreaks);
+
+// Lightning system
+let lightningFlash = 0;
+let lightningTimer = Math.random() * 5 + 3;
+let lightningDuration = 0;
+let lightningFlicker = 0;
+
+const lightningLight = new THREE.PointLight(0xffeedd, 0, 80, 1);
+lightningLight.position.set(0, 18, -10);
+scene.add(lightningLight);
+
+const lightningLight2 = new THREE.PointLight(0xffddbb, 0, 60, 1.5);
+lightningLight2.position.set(-10, 16, -5);
+scene.add(lightningLight2);
+
+// Lightning cloud (darker, charged cloud)
+const lightningCloudGroup = new THREE.Group();
+const stormCloudMat = new THREE.MeshStandardMaterial({
+  color: 0x2a1a2a,
+  transparent: true,
+  opacity: 0.5,
+  roughness: 1,
+  metalness: 0
+});
+
+for (let i = 0; i < 8; i++) {
+  const size = 1 + Math.random() * 1.5;
+  const stormGeo = new THREE.SphereGeometry(size, 8, 8);
+  const stormCloud = new THREE.Mesh(stormGeo, stormCloudMat);
+  stormCloud.position.set(
+    (Math.random() - 0.5) * 4,
+    (Math.random() - 0.5) * 0.5,
+    (Math.random() - 0.5) * 2
+  );
+  lightningCloudGroup.add(stormCloud);
+}
+
+lightningCloudGroup.position.set(0, 16, -15);
+scene.add(lightningCloudGroup);
+
+// Cloud flash material for lightning cloud
+const cloudFlashMat = new THREE.MeshStandardMaterial({
+  color: 0xffeedd,
+  transparent: true,
+  opacity: 0,
+  emissive: 0xffcc88,
+  emissiveIntensity: 0,
+  roughness: 1
+});
+
+const flashCloud = new THREE.Mesh(new THREE.SphereGeometry(2.5, 8, 8), cloudFlashMat);
+flashCloud.position.set(0, 16, -15);
+scene.add(flashCloud);
+
 // Animation
 const clock = new THREE.Clock();
 
@@ -859,16 +1032,18 @@ function animate() {
 
   const time = clock.getElapsedTime();
 
-  // Camera: gentle auto-pan + mouse parallax
-  const autoPanX = Math.sin(time * 0.15) * 2;
-  const autoPanY = Math.sin(time * 0.1) * 0.5;
+  // Camera: 360 auto-rotation + subtle mouse parallax offset
+  rotationAngle += rotationSpeed * 0.016;
+  if (rotationAngle > Math.PI * 2) rotationAngle -= Math.PI * 2;
 
-  targetX += (mouseX * 2 + autoPanX - targetX) * 0.02;
-  targetY += (-mouseY * 1.5 + autoPanY - targetY) * 0.02;
+  // Mouse parallax as offset from the orbit position
+  const parallaxX = mouseX * 1.5;
+  const parallaxY = -mouseY * 1;
 
-  camera.position.x = targetX;
-  camera.position.y = 8 + targetY;
-  camera.lookAt(0, 2, 0);
+  camera.position.x = Math.sin(rotationAngle) * cameraDistance + parallaxX;
+  camera.position.z = Math.cos(rotationAngle) * cameraDistance;
+  camera.position.y = cameraHeight + parallaxY + Math.sin(time * 0.15) * 0.5;
+  camera.lookAt(cameraTarget);
 
   // Cyclist animation - smooth pedaling with proper hierarchy
   const t = (time * 0.06) % 1;
@@ -941,6 +1116,106 @@ function animate() {
   }
   fireflies.geometry.attributes.position.needsUpdate = true;
   fireflyMat.opacity = 0.5 + Math.sin(time * 2) * 0.25;
+
+  // Spark particles animation
+  if (lightbulbOn) {
+    const spPos = sparks.geometry.attributes.position.array;
+    for (let i = 0; i < sparkCount; i++) {
+      sparkLifetimes[i] += 0.016;
+      if (sparkLifetimes[i] > sparkMaxLifetimes[i]) {
+        resetSpark(i);
+      }
+      const lifeRatio = sparkLifetimes[i] / sparkMaxLifetimes[i];
+      spPos[i * 3] += sparkVelocities[i].x;
+      spPos[i * 3 + 1] += sparkVelocities[i].y;
+      spPos[i * 3 + 2] += sparkVelocities[i].z;
+      // Fade out near end of life
+      sparkVelocities[i].y *= 0.99;
+    }
+    sparks.geometry.attributes.position.needsUpdate = true;
+    sparkMat.opacity = 0.7 + Math.sin(time * 3) * 0.2;
+  } else {
+    sparkMat.opacity = 0;
+  }
+
+  // Warm rain animation
+  const rPos = rain.geometry.attributes.position.array;
+  for (let i = 0; i < rainCount; i++) {
+    rPos[i * 3 + 1] -= rainVelocities[i];
+    // Wind drift
+    rPos[i * 3] += Math.sin(time * 0.5 + i * 0.01) * 0.01;
+    rPos[i * 3 + 2] += Math.cos(time * 0.3 + i * 0.02) * 0.005;
+    // Reset when below ground
+    if (rPos[i * 3 + 1] < 0) {
+      rPos[i * 3] = (Math.random() - 0.5) * 50;
+      rPos[i * 3 + 1] = 25 + Math.random() * 5;
+      rPos[i * 3 + 2] = (Math.random() - 0.5) * 50;
+    }
+  }
+  rain.geometry.attributes.position.needsUpdate = true;
+  rainMat.opacity = 0.25 + Math.sin(time * 0.8) * 0.1;
+
+  // Warm wind streaks
+  const wPos = windStreaks.geometry.attributes.position.array;
+  for (let i = 0; i < windStreakCount; i++) {
+    windLifetimes[i] += 0.016;
+    wPos[i * 3] += windSpeeds[i];
+    wPos[i * 3 + 1] += Math.sin(time + i) * 0.005;
+    if (wPos[i * 3] > 25 || windLifetimes[i] > 5) {
+      resetWind(i);
+    }
+  }
+  windStreaks.geometry.attributes.position.needsUpdate = true;
+  windMat.opacity = 0.15 + Math.sin(time * 0.6) * 0.08;
+
+  // Lightning system
+  lightningTimer -= 0.016;
+  if (lightningTimer <= 0 && lightningDuration <= 0) {
+    // Trigger lightning
+    lightningDuration = 0.15 + Math.random() * 0.1;
+    lightningFlicker = 0;
+    lightningCloudGroup.position.x = (Math.random() - 0.5) * 20;
+    lightningCloudGroup.position.z = -15 + (Math.random() - 0.5) * 10;
+    flashCloud.position.copy(lightningCloudGroup.position);
+    lightningLight.position.copy(lightningCloudGroup.position);
+    lightningLight.position.y = 16;
+    lightningLight2.position.copy(lightningCloudGroup.position);
+    lightningLight2.position.y = 14;
+    lightningTimer = Math.random() * 8 + 4;
+  }
+
+  if (lightningDuration > 0) {
+    lightningDuration -= 0.016;
+    lightningFlicker += 1;
+    const flick = Math.sin(lightningFlicker * 20) > 0 ? 1 : 0.2;
+    lightningLight.intensity = 15 * flick;
+    lightningLight2.intensity = 10 * flick;
+    cloudFlashMat.opacity = 0.6 * flick;
+    cloudFlashMat.emissiveIntensity = 2 * flick;
+    flashCloud.position.copy(lightningCloudGroup.position);
+    // Flash CSS overlay
+    const flashEl = document.querySelector('.lightning-flash');
+    if (flashEl) flashEl.style.opacity = flick;
+  } else {
+    lightningLight.intensity *= 0.9;
+    lightningLight2.intensity *= 0.9;
+    cloudFlashMat.opacity *= 0.9;
+    cloudFlashMat.emissiveIntensity *= 0.9;
+    const flashEl = document.querySelector('.lightning-flash');
+    if (flashEl) flashEl.style.opacity *= 0.85;
+  }
+
+  // Lightning cloud drift
+  lightningCloudGroup.position.x += Math.sin(time * 0.1) * 0.005;
+  flashCloud.position.x = lightningCloudGroup.position.x;
+  flashCloud.position.z = lightningCloudGroup.position.z;
+
+  // Wind effect on trees (stronger sway)
+  trees.forEach((tree, i) => {
+    const windForce = Math.sin(time * 0.8 + i * 0.3) * 0.04;
+    tree.rotation.z = windForce + Math.sin(time * 0.4 + i * 0.5) * 0.02;
+    tree.rotation.x = Math.cos(time * 0.3 + i * 0.7) * 0.015;
+  });
 
   renderer.render(scene, camera);
 }
