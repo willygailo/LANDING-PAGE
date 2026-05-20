@@ -2,7 +2,7 @@
 
 # 🏘️ Miniature Town Landing Page
 
-> ✨ An immersive 3D animated landing page — golden hour vibes, a cycling character, glowing street lamps & floating glass UI.
+> ✨ An immersive 3D animated landing page — warm atmospheric vibes, dynamic weather, lightning storms & floating glass UI.
 
 ![Hero View](image/screenshot-hero.png)
 
@@ -27,11 +27,15 @@
 |---|---|
 | 🏡 **3D Miniature Town** | Houses, trees, street lamps, mountains & clouds in Three.js |
 | 🚴 **Animated Cyclist** | Hierarchical character with realistic pedaling & limb animation |
-| 🌅 **Golden Hour Lighting** | Warm directional lights, point lights & cinematic fog |
+| 🌅 **Warm Atmosphere** | Warm ambient, directional, fill & rim lights with ACES tone mapping |
 | 🪟 **Interactive UI** | Glassmorphism nav, floating hero card, orbital node nav & clickable lightbulb |
-| ✨ **Firefly Particles** | Ambient floating particles with additive blending |
-| 🖱️ **Mouse Parallax** | Subtle camera movement following your cursor |
-| 🌊 **Auto-Pan Animation** | Gentle camera drift for a living, breathing feel |
+| ✨ **Firefly + Spark Particles** | Ambient floating fireflies + warm sparks around the lightbulb |
+| 🔄 **360° Auto-Rotation** | Camera orbits the full scene continuously with smooth looping |
+| 🖱️ **Mouse Parallax** | Cursor adds subtle offset to the orbiting camera for depth |
+| ⛈️ **Lightning Clouds** | Dark storm cloud with intermittent lightning flashes & screen-wide glow |
+| 🌧️ **Warm Rain** | Hundreds of warm-tinted rain particles with gravity & wind drift |
+| 💨 **Warm Wind** | Flowing wind streaks that affect rain, sparks & tree sway |
+| 🌊 **Gentle Camera Bob** | Subtle vertical oscillation for a living, breathing feel |
 
 ---
 
@@ -53,9 +57,9 @@
 ```
 LANDING PAGE/
 │
-├── 📄 index.html          # Main HTML structure
-├── 🎨 style.css           # All UI styling & animations
-├── ⚙️  script.js           # Three.js scene, models & animation loop
+├── 📄 index.html          # Main HTML structure + overlays
+├── 🎨 style.css           # All UI styling, animations & weather overlays
+├── ⚙️  script.js           # Three.js scene, models, weather & animation loop
 ├── 🖼️  image/              # Screenshots & assets
 │   ├── screenshot-hero.png
 │   ├── screenshot-nav.png
@@ -86,11 +90,12 @@ Then open → **http://localhost:8080**
 
 | Element | Action | Effect |
 |---|---|---|
-| 💡 **Lightbulb** | `Click` | Toggle warm scene glow |
+| 💡 **Lightbulb** | `Click` | Toggle warm scene glow + sparks |
 | 🧭 **Nav Pills** | `Click` | Switch active section |
 | ⚫ **Node Dots** | `Click` | Navigate sections |
 | 🔘 **CTA Button** | `Hover` | Glow + lift effect |
-| 🖱️ **Mouse Move** | `Move` | Parallax camera drift |
+| 🖱️ **Mouse Move** | `Move` | Parallax offset on orbiting camera |
+| 🔄 **Camera** | `Auto` | Continuous 360° rotation |
 
 ---
 
@@ -100,8 +105,10 @@ Then open → **http://localhost:8080**
 🔤 Font          → Outfit (300–700)
 🎨 Accent        → #ff8c64 → #ff6b4a gradient
 🪟 Glass Effect  → backdrop-filter: blur(20-32px)
-🌑 Background    → #12122a deep navy
+🌑 Background    → #1a1228 warm dark purple
 📝 Text          → White, opacity 0.4–0.9
+🌫️ Fog           → FogExp2(0x2a1a2e, 0.012)
+💡 Tone Mapping  → ACESFilmic, exposure 1.0
 ```
 
 ---
